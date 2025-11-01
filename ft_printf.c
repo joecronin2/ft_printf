@@ -9,6 +9,7 @@
 typedef struct s_fmt
 {
 	int		width;
+	int precision;   // '.8'
 	bool left_align; // '-'
 	bool space;      // ' '
 	bool zero;       // '0'
@@ -36,7 +37,8 @@ void	set_flag(char c, t_fmt *fmt)
 		fmt->alt = true;
 }
 
-// % [flags] [width] specifier
+	// _printf("%+010d\n", 1234);
+// % [flags] [width] .[precision] specifier
 const char	*parse_fmt(const char *s, t_fmt *fmt)
 {
 	s++;
@@ -45,6 +47,12 @@ const char	*parse_fmt(const char *s, t_fmt *fmt)
 	if (isdigit(*s))
 	{
 		fmt->width = atoi(s);
+		while (isdigit(*s))
+			s++;
+	}
+	if (*s == '.')
+	{
+		fmt->precision = atoi(++s);
 		while (isdigit(*s))
 			s++;
 	}
@@ -58,11 +66,6 @@ char	*ft_strchrnul(const char *s, int c)
 		s++;
 	return ((char *)s);
 }
-
-// 1234 w6
-// 001234
-// 123456 w6
-// 00123456
 
 void	write_pad(bool zero, int pad)
 {
@@ -136,6 +139,7 @@ char	*ft_itoa(int n)
 // structure left (no zeros): sign num padding
 // -1234     |
 // +1234     |
+// +1234     |
 //
 // structure spaces (left handled): padding sign num
 //      -1234|
@@ -147,13 +151,27 @@ int	calc_padding(int width, int len)
 	return (0);
 }
 
-void	write_decimal(t_fmt *fmt, int d)
+int	write_sign(bool negative, bool plus)
+{
+	int	written;
+
+	written = 0;
+	if (negative)
+		write(1, "-", ++written);
+	else if (plus)
+		write(1, "+", ++written);
+	return (written);
+}
+
+int	write_decimal(t_fmt *fmt, int d)
 {
 	char	*str;
 	bool	negative;
 	int		pad;
 	int		len;
+	int		written;
 
+	written = 0;
 	if (d < 0)
 	{
 		negative = true;
@@ -163,24 +181,21 @@ void	write_decimal(t_fmt *fmt, int d)
 		negative = false;
 	str = ft_itoa(d);
 	len = strlen(str);
-	pad = calc_padding(fmt->width, len);
+	if (fmt->precision > len)
+		pad = calc_padding(fmt->precision, len);
+	else
+		pad = calc_padding(fmt->width, len);
 	if (fmt->zero)
 	{
 		// always right, sign padding num
-		if (negative)
-			write(1, "-", 1);
-		if (fmt->plus)
-			write(1, "+", 1);
+		written += write_sign(negative, fmt->plus);
 		write_pad(fmt->zero, pad);
 		write(1, str, len);
 	}
 	else if (fmt->left_align)
 	{
 		// always left, sign num padding
-		if (negative)
-			write(1, "-", 1);
-		if (fmt->plus)
-			write(1, "+", 1);
+		written += write_sign(negative, fmt->plus);
 		write(1, str, len);
 		write_pad(0, pad);
 	}
@@ -188,13 +203,11 @@ void	write_decimal(t_fmt *fmt, int d)
 	{
 		// always right, padding sign num
 		write_pad(fmt->zero, pad);
-		if (negative)
-			write(1, "-", 1);
-		if (fmt->plus)
-			write(1, "+", 1);
+		written += write_sign(negative, fmt->plus);
 		write(1, str, len);
 	}
 	free(str);
+	return (written);
 }
 
 void	write_str(t_fmt *fmt, char *s)
@@ -211,20 +224,22 @@ void	write_str(t_fmt *fmt, char *s)
 		write_pad(0, pad);
 }
 
-void	_printf(const char *fmt, ...)
+int	_vprintf(const char *fmt, va_list ap)
 {
 	t_fmt	f;
-	va_list	ap;
-	char	*next;
 	int		i;
 	char	c;
+	char	*next;
+	int		written;
 
+	written = 0;
+	// TODO: unsigned?
 	memset(&f, 0, sizeof(f));
-	va_start(ap, fmt);
 	while (*fmt)
 	{
 		next = ft_strchrnul(fmt, '%');
 		write(1, fmt, next - fmt);
+		written += next - fmt;
 		fmt = next;
 		if (*fmt)
 		{
@@ -232,16 +247,31 @@ void	_printf(const char *fmt, ...)
 			if (f.spec == 'd')
 			{
 				i = va_arg(ap, int);
-				write_decimal(&f, i);
+				written += write_decimal(&f, i);
 			}
-			if (f.spec == 'c')
+			// else if (f.spec == 's'){
+			// 	c = va_arg(ap, char);
+			// 	write_str(1, &c, 1);
+			// }
+			else if (f.spec == 'c')
 			{
 				c = va_arg(ap, int);
 				write(1, &c, 1);
 			}
 		}
 	}
+	return (written); // TODO
+}
+
+int	_printf(const char *fmt, ...)
+{
+	va_list	ap;
+	int		ret;
+
+	va_start(ap, fmt);
+	ret = _vprintf(fmt, ap);
 	va_end(ap);
+	return (ret);
 }
 
 void	print_fmt(t_fmt *fmt)
@@ -297,10 +327,12 @@ void	test_parse(void)
 int	main(void)
 {
 	test_parse();
-	_printf ("%d\n", 1234);
-	_printf ("%+d\n", 1234);
-	_printf ("%+d\n", -1234);
-	_printf ("%010d\n", -1234);
+	_printf("|%.10d| |-123|\n", -1234);
+	printf("|%.10d| |-123|\n", -1234);
+	_printf("%d\n", 1234);
+	_printf("%+d\n", 1234);
+	_printf("%+d\n", -1234);
+	_printf("%010d\n", -1234);
 	_printf("%+010d\n", 1234);
 	_printf("%+10d\n", 1234);
 	_printf("%-10d\n", -1234);
