@@ -17,12 +17,19 @@ set_flag (char c, t_fmt *fmt)
   if (c == '#') fmt->alt = true;
 }
 
+void
+init_fmt (t_fmt *fmt)
+{
+  ft_memset (fmt, 0, sizeof (*fmt));
+}
+
 // _printf("%+010d\n", 1234);
 // % [flags] [width] .[precision] specifier
 const char *
 parse_fmt (const char *s, t_fmt *fmt)
 {
   s++;
+
   while (is_flag (*s))
     set_flag (*s++, fmt);
   if (ft_isdigit (*s))
@@ -33,6 +40,7 @@ parse_fmt (const char *s, t_fmt *fmt)
     }
   if (*s == '.')
     {
+      fmt->precision_specified = true;
       fmt->precision = ft_atoi (++s);
       while (ft_isdigit (*s))
         s++;

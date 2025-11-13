@@ -5,6 +5,7 @@ typedef struct s_fmt
 {
   int width;
   int precision;   // '.8'
+  bool precision_specified;   // '.8'
   bool left_align; // '-'
   bool space;      // ' '
   bool zero;       // '0'

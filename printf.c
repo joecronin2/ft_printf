@@ -6,10 +6,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "write.h"
 #include "format.h"
 #include "util.h"
-
+#include "write.h"
 
 // 00001234 0
 // -0001234 0
@@ -34,7 +33,6 @@
 // structure spaces (left handled): padding sign num
 //      -1234|
 
-
 int
 _vprintf (const char *fmt, va_list ap)
 {
@@ -58,6 +56,8 @@ _vprintf (const char *fmt, va_list ap)
     }
   return (written);
 }
+
+// if NULL return -1
 
 int
 _printf (const char *fmt, ...)
@@ -123,57 +123,61 @@ test_parse (void)
   assert (f.spec == 'd');
 }
 
+void
+test_decimal ()
+{
+  int nums[] = { 0, 1, -1, 42, -42, 1234, -1234, 999999, -999999 };
 
-int main(void) {
-    int nums[] = {0, 1, -1, 42, -42, 1234, -1234, 999999, -999999};
-    
-    for (int i = 0; i < (int)(sizeof(nums)/sizeof(nums[0])); i++) {
-        int n = nums[i];
+  for (int i = 0; i < (int)(sizeof (nums) / sizeof (nums[0])); i++)
+    {
+      int n = nums[i];
 
-        // basic number
-        printf("printf   : |%d|\n", n);
-        _printf("my printf: |%d|\n", n);
+      printf ("basic number\n|%d|\n", n);
+      _printf ("|%d|\n", n);
 
-        // sign flag
-        printf("printf   : |%+d|\n", n);
-        _printf("my printf: |%+d|\n", n);
+      printf ("sign flag\n|%+d|\n", n);
+      _printf ("|%+d|\n", n);
 
-        // width
-        printf("printf   : |%6d|\n", n);
-        _printf("my printf: |%6d|\n", n);
+      printf ("width\n|%6d|\n", n);
+      _printf ("|%6d|\n", n);
 
-        // width + sign
-        printf("printf   : |%+6d|\n", n);
-        _printf("my printf: |%+6d|\n", n);
+      printf ("width + sign\n|%+6d|\n", n);
+      _printf ("|%+6d|\n", n);
 
-        // zero-padding
-        printf("printf   : |%06d|\n", n);
-        _printf("my printf: |%06d|\n", n);
+      printf ("zero-padding\n|%06d|\n", n);
+      _printf ("|%06d|\n", n);
 
-        // zero-padding + sign
-        printf("printf   : |%+06d|\n", n);
-        _printf("my printf: |%+06d|\n", n);
+      printf ("zero-padding + sign\n|%+06d|\n", n);
+      _printf ("|%+06d|\n", n);
 
-        // left-align
-        printf("printf   : |%-6d|\n", n);
-        _printf("my printf: |%-6d|\n", n);
+      printf ("left-align\n|%-6d|\n", n);
+      _printf ("|%-6d|\n", n);
 
-        // precision only
-        printf("printf   : |%.4d|\n", n);
-        _printf("my printf: |%.4d|\n", n);
+      printf ("precision only\n|%.4d|\n", n);
+      _printf ("|%.4d|\n", n);
 
-        // precision + width
-        printf("printf   : |%8.4d|\n", n);
-        _printf("my printf: |%8.4d|\n", n);
+      printf ("precision + width\n|%8.4d|\n", n);
+      _printf ("|%8.4d|\n", n);
 
-        // left-align + precision + width
-        printf("printf   : |%-8.4d|\n", n);
-        _printf("my printf: |%-8.4d|\n", n);
+      printf ("left-align + precision + width\n|%-8.4d|\n", n);
+      _printf ("|%-8.4d|\n", n);
 
-        printf("----------\n");
+      printf ("----------\n");
     }
+}
 
-    return 0;
+void
+test_str ()
+{
+	_printf("...%s...", "testabc");
+}
+
+int
+main (void)
+{
+	int r = _printf("%", 123);
+  // test_str ();
+  return 0;
 }
 
 // int

@@ -42,11 +42,18 @@ write_pad (bool zero, int pad)
 }
 
 int
+calc_prec_pad (int prec, int len)
+{
+  if (prec > len) return prec - len;
+  return 0;
+}
+
+int
 write_decimal (t_fmt *fmt, va_list ap)
 {
   char *str;
   bool negative;
-  int pad;
+  int width_pad;
   int len;
   int written;
 
@@ -57,26 +64,29 @@ write_decimal (t_fmt *fmt, va_list ap)
   written = 0;
   str = ft_itoa (n);
   len = ft_strlen (str);
-  pad = calc_padding (fmt->width, len);
-  if (fmt->zero)
+  int prec_pad = (fmt->precision_specified && fmt->precision > len)
+                     ? fmt->precision - len
+                     : 0;
+
+  width_pad = calc_padding (fmt->width, len);
+  if (fmt->left_align)
     {
-      // always right, sign padding num
-      written += write_sign (negative, fmt->plus);
-      write_pad (fmt->zero, pad);
-      write (1, str, len);
-    }
-  else if (fmt->left_align)
-    {
-      // always left, sign num padding
       written += write_sign (negative, fmt->plus);
       write (1, str, len);
-      write_pad (0, pad);
+      write_pad (0, width_pad);
     }
   else
     {
-      // always right, padding sign num
-      write_pad (fmt->zero, pad);
-      written += write_sign (negative, fmt->plus);
+      if (fmt->zero)
+        {
+          written += write_sign (negative, fmt->plus);
+          write_pad (fmt->zero, width_pad);
+        }
+      else
+        {
+          write_pad (fmt->zero, width_pad);
+          written += write_sign (negative, fmt->plus);
+        }
       write (1, str, len);
     }
   free (str);
