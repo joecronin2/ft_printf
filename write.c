@@ -1,131 +1,63 @@
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "util.h"
-#include "write.h"
 
 int
-calc_padding (int width, int len)
+write_num (long long n, char *base, char *prefix)
 {
-  if (width) return (width - len);
-  return (0);
+  char buf[64];
+  int len = 0;
+  int base_len = ft_strlen (base);
+  if (prefix) len += write (1, prefix, ft_strlen (prefix));
+  int num_len = ft_putnbr_base (buf, n, base, base_len);
+  len += write (1, buf, num_len);
+  return len;
 }
 
 int
-write_sign (bool negative, bool plus)
+write_str (char *s)
 {
-  int written;
-
-  written = 0;
-  if (negative)
-    write (1, "-", ++written);
-  else if (plus)
-    write (1, "+", ++written);
-  return (written);
+  if (!s) return write (1, "(null)", 6);
+  size_t len = ft_strlen (s);
+  return write (1, s, len);
 }
 
 int
-write_pad (bool zero, int pad)
+write_char (char c)
 {
-  char *buf;
-
-  buf = malloc (pad);
-  if (zero)
-    ft_memset (buf, '0', pad);
-  else
-    ft_memset (buf, ' ', pad);
-  write (1, buf, pad);
-  free (buf);
-  return pad;
+  return write (1, &c, 1);
 }
 
 int
-calc_prec_pad (int prec, int len)
+write_ptr (void *ptr)
 {
-  if (prec > len) return prec - len;
-  return 0;
+  if (!ptr) return write (1, "(nil)", 5);
+  int len = write_num ((long long)ptr, "0123456789abcdef", "0x");
+  return len;
 }
 
 int
-write_decimal (t_fmt *fmt, va_list ap)
+write_spec (va_list ap, char spec)
 {
-  char *str;
-  bool negative;
-  int width_pad;
-  int len;
-  int written;
-
-  int n = va_arg (ap, int);
-  negative = n < 0;
-  if (negative) n = -n;
-
-  written = 0;
-  str = ft_itoa (n);
-  len = ft_strlen (str);
-  int prec_pad = (fmt->precision_specified && fmt->precision > len)
-                     ? fmt->precision - len
-                     : 0;
-
-  width_pad = calc_padding (fmt->width, len);
-  if (fmt->left_align)
-    {
-      written += write_sign (negative, fmt->plus);
-      write (1, str, len);
-      write_pad (0, width_pad);
-    }
-  else
-    {
-      if (fmt->zero)
-        {
-          written += write_sign (negative, fmt->plus);
-          write_pad (fmt->zero, width_pad);
-        }
-      else
-        {
-          write_pad (fmt->zero, width_pad);
-          written += write_sign (negative, fmt->plus);
-        }
-      write (1, str, len);
-    }
-  free (str);
-  return (written);
-}
-
-int
-write_str (t_fmt *fmt, va_list ap)
-{
-  int slen;
-  int pad;
-  char *s = va_arg (ap, char *);
-  int written = 0;
-
-  slen = ft_strlen (s);
-  pad = fmt->width ? fmt->width - slen : 0;
-  if (!fmt->left_align) write_pad (0, pad);
-  write (1, s, slen);
-  if (fmt->left_align) write_pad (0, pad);
-  return written;
-}
-
-int
-write_char (t_fmt *fmt, va_list ap)
-{
-  (void)fmt; // TODO
-  char c = va_arg (ap, int);
-  write (1, &c, 1);
-  return 1;
-}
-
-int
-write_spec (va_list ap, t_fmt *fmt)
-{
-  if (fmt->spec == 'd')
-    return write_decimal (fmt, ap);
-  else if (fmt->spec == 's')
-    return write_str (fmt, ap);
-  else if (fmt->spec == 'c')
-    return write_char (fmt, ap);
-  return 0;
+  if (spec == 'd' || spec == 'i')
+    return write_num (va_arg (ap, int), "0123456789", "");
+  else if (spec == 'u')
+    return write_num (va_arg (ap, unsigned int), "0123456789", "");
+  else if (spec == 'x')
+    return write_num (va_arg (ap, unsigned int), "0123456789abcdef", "");
+  else if (spec == 'X')
+    return write_num (va_arg (ap, unsigned int), "0123456789ABCDEF", "");
+  else if (spec == 'p')
+    return write_ptr (va_arg (ap, void *));
+  else if (spec == 's')
+    return write_str (va_arg (ap, char *));
+  else if (spec == 'c')
+    return write_char (va_arg (ap, int));
+  else if (spec == '%')
+    return write (1, "%", 1);
+  return -1;
 }

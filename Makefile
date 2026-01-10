@@ -1,12 +1,12 @@
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra
+# CFLAGS = -Wall -Wextra -Werror
 
 TARGET = printf
 
-SRCS = printf.c util.c format.c write.c
+SRCS = printf.c util.c write.c
 
 OBJS = $(SRCS:.c=.o)
-BONUS_OBJS = $(BONUS_SRCS:.c=.o)
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
@@ -17,7 +17,7 @@ $(TARGET): $(OBJS)
 all: $(TARGET)
 
 clean:
-	rm -f $(OBJS) $(BONUS_OBJS)
+	rm -f $(OBJS) 
 
 fclean: clean
 	rm -f $(TARGET)
