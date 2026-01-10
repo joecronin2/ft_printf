@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jcronin <jcronin@student.codam.nl>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/10 17:42:55 by jcronin           #+#    #+#             */
-/*   Updated: 2026/01/10 17:43:17 by jcronin          ###   ########.fr       */
+/*   Created: 2026/01/10 17:56:07 by jcronin           #+#    #+#             */
+/*   Updated: 2026/01/10 17:56:08 by jcronin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ int	ft_printf(const char *fmt, ...)
 	va_list	ap;
 	int		ret;
 
+	if (fmt == NULL)
+		return (-1);
 	va_start(ap, fmt);
 	ret = ft_vprintf(fmt, ap);
 	va_end(ap);

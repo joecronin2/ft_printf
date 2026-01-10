@@ -6,7 +6,7 @@ LIBFT_DIR = ./libft
 LIBFT = $(LIBFT_DIR)/libft.a
 CFLAGS += -I$(LIBFT_DIR)
 
-TARGET = printf
+TARGET = libftprintf.a
 SRCS = printf.c util.c write.c
 OBJS = $(SRCS:.c=.o)
 
@@ -16,7 +16,8 @@ $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
 $(TARGET): $(OBJS) $(LIBFT)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) -L$(LIBFT_DIR) -lft
+	cp $(LIBFT) $(TARGET)
+	ar rcs $(TARGET) $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
