@@ -11,15 +11,33 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <stdlib.h>
+#include <unistd.h>
+
+static void	put_uint(unsigned int n, int fd)
+{
+	char	digit;
+
+	if (n < 10)
+	{
+		digit = '0' + n;
+		write(fd, &digit, 1);
+	}
+	else
+	{
+		put_uint(n / 10, fd);
+		digit = '0' + (n % 10);
+		write(fd, &digit, 1);
+	}
+}
 
 void	ft_putnbr_fd(int n, int fd)
 {
-	char	*str;
-
-	str = ft_itoa(n);
-	ft_putstr_fd(str, fd);
-	free(str);
+	if (n < 0)
+	{
+		write(fd, "-", 1);
+		n = -n;
+	}
+	put_uint(n, fd);
 }
 
 // int	main(void)

@@ -10,13 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stddef.h>
+#include "libft.h"
 
 size_t	ft_strlen(const char *s)
 {
-	const char	*p = s;
+	size_t	i;
 
-	while (*p)
-		p++;
-	return (p - s);
+	i = 0;
+	while (s[i])
+		i++;
+	return (i);
 }
