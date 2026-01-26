@@ -14,6 +14,7 @@
 #include "write.h"
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -42,8 +43,6 @@ static int	ft_vprintf(const char *fmt, va_list ap)
 	return (written);
 }
 
-// if NULL return -1
-
 int	ft_printf(const char *fmt, ...)
 {
 	va_list	ap;
@@ -57,11 +56,14 @@ int	ft_printf(const char *fmt, ...)
 	return (ret);
 }
 
-// #include <assert.h>
-// #include <limits.h>
-//
-// int	main(void)
-// {
+#include <assert.h>
+#include <limits.h>
+
+int	main(void)
+{
+	ft_printf("%C %C %C", 'a', 'b', 'c');
+	return (0);
+}
 // 	int	a;
 // 	int	x;
 //
